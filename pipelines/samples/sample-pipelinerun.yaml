@@ -46,6 +46,11 @@ spec:
       value: "$MAS_APP_SOURCE_SAFETY"
     - name: mas_app_channel_safety
       value: "$MAS_APP_CHANNEL_SAFETY"
+     # HP Utilities Application
+    - name: mas_app_source_hputilities
+      value: "$MAS_APP_SOURCE_HPUTILITIES"
+    - name: mas_app_channel_hputilities
+      value: "$MAS_APP_CHANNEL_HPUTILITIES"
 
   workspaces:
     # The generated configuration files

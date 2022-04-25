@@ -281,6 +281,29 @@ spec:
         - name: settings
           workspace: shared-settings
 
+    # 4. Install CP4D with Watson Studio Services
+    # -------------------------------------------------------------------------
+    - name: cp4d-install-watsonstudio
+      params:
+        - name: junit_suite_name
+          value: cp4d-install-watsonstudio
+      # Only install CP4D with Watson Studio if Predict or HP Utilities are being installed
+      when:
+        # See: https://github.com/tektoncd/pipeline/issues/3591#issuecomment-1073901961
+        - input: "$(params.mas_app_channel_predict)$(params.mas_app_channel_hputilities)"
+          operator: notin
+          values: [""]
+      taskRef:
+        name: mas-devops-cp4d-install-services-watsonstudio
+        kind: ClusterTask
+      runAfter:
+        - cfg-ocp
+      workspaces:
+        - name: configs
+          workspace: shared-configs
+        - name: settings
+          workspace: shared-settings
+
     # 7. Install IBM SLS
     # -------------------------------------------------------------------------
     - name: install-sls
@@ -318,8 +341,29 @@ spec:
         - name: settings
           workspace: shared-settings
 
+    # 9. Install AppConnect
+    # -------------------------------------------------------------------------
+    - name: install-appconnect
+      params:
+        - name: junit_suite_name
+          value: install-appconnect
+      taskRef:
+        kind: ClusterTask
+        name: mas-devops-install-appconnect
+      # Only load App Connect if HP Utilities is being installed
+      when:
+        - input: "$(params.mas_app_channel_hputilities)"
+          operator: notin
+          values: [""]
+      runAfter:
+        - cfg-ocp
+      workspaces:
+        - name: configs
+          workspace: shared-configs
+        - name: settings
+          workspace: shared-settings
 
-    # 9. Configure Workspace
+    # 10. Configure Workspace
     # -------------------------------------------------------------------------
     - name: gencfg-workspace
       params:
@@ -339,7 +383,7 @@ spec:
           workspace: shared-settings
 
 
-    # 10. Install & configure IBM MAS
+    # 11. Install & configure IBM MAS
     # -------------------------------------------------------------------------
     - name: install-suite
       params:
@@ -351,6 +395,7 @@ spec:
       runAfter:
         - install-sls
         - install-uds
+        - install-appconnect
         - gencfg-workspace
       workspaces:
         - name: configs
@@ -360,7 +405,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 11. Configure Db2 in MAS
+    # 12. Configure Db2 in MAS
     # -------------------------------------------------------------------------
     - name: cfg-suite-db2
       params:
@@ -384,7 +429,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 12. Configure Kafka in MAS
+    # 13. Configure Kafka in MAS
     # -------------------------------------------------------------------------
     - name: cfg-suite-kafka
       params:
@@ -407,9 +452,9 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 13. Install IBM MAS IoT application
+    # 14. Install IBM MAS IoT application
     # -------------------------------------------------------------------------
-    # 13.1 Install IoT
+    # 14.1 Install IoT
     - name: install-iot
       params:
         - name: junit_suite_name
@@ -435,7 +480,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 13.2 Configure IoT workspace
+    # 14.2 Configure IoT workspace
     - name: cfg-iot
       params:
         - name: junit_suite_name
@@ -458,9 +503,9 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 14. Install IBM MAS Monitor application
+    # 15. Install IBM MAS Monitor application
     # -------------------------------------------------------------------------
-    # 14.1 Install Monitor
+    # 15.1 Install Monitor
     - name: install-monitor
       params:
         - name: junit_suite_name
@@ -485,7 +530,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 14.2 Configure Monitor workspace
+    # 15.2 Configure Monitor workspace
     - name: cfg-monitor
       params:
         - name: junit_suite_name
@@ -508,9 +553,9 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 15. Install IBM MAS Safety application
+    # 16. Install IBM MAS Safety application
     # -------------------------------------------------------------------------
-    # 15.1 Install Safety
+    # 16.1 Install Safety
     - name: install-safety
       params:
         - name: junit_suite_name
@@ -535,7 +580,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 15.2 Configure Safety workspace
+    # 16.2 Configure Safety workspace
     - name: cfg-safety
       params:
         - name: junit_suite_name
@@ -558,9 +603,9 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 16. Install IBM MAS Manage application
+    # 17. Install IBM MAS Manage application
     # -------------------------------------------------------------------------
-    # 16.1 Manage Install
+    # 17.1 Manage Install
     - name: install-manage
       params:
         - name: junit_suite_name
@@ -585,7 +630,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 16.2 Configure Manage workspace
+    # 17.2 Configure Manage workspace
     - name: cfg-manage
       params:
         - name: junit_suite_name
@@ -610,9 +655,9 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 17. Predict
+    # 18. Predict
     # -------------------------------------------------------------------------
-    # 17.1 Predict Install
+    # 18.1 Predict Install
     - name: install-predict
       params:
         - name: junit_suite_name
@@ -632,13 +677,14 @@ spec:
           operator: notin
           values: [""]
       runAfter:
+        - cp4d-install-watsonstudio
         - cfg-manage
         - cfg-monitor
       workspaces:
         - name: settings
           workspace: shared-settings
 
-    # 17.2 Configure Predict workspace
+    # 18.2 Configure Predict workspace
     - name: cfg-predict
       params:
         - name: junit_suite_name
@@ -661,9 +707,9 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 18. MSO
+    # 19. MSO
     # -------------------------------------------------------------------------
-    # 18.1 MSO Install
+    # 19.1 MSO Install
     - name: install-mso
       params:
         - name: junit_suite_name
@@ -688,7 +734,7 @@ spec:
         - name: settings
           workspace: shared-settings
 
-    # 18.2 Configure MSO workspace
+    # 19.2 Configure MSO workspace
     - name: cfg-mso
       params:
         - name: junit_suite_name
@@ -711,7 +757,57 @@ spec:
         - name: settings
           workspace: shared-settings
 
-  # 19. Mustgather executed in finally block. Use suite_mustgather_download
+  # 20. HP Utilities
+    # -------------------------------------------------------------------------
+    # 20.1 HP Utilities Install
+    - name: install-hputilities
+      params:
+        - name: junit_suite_name
+          value: app-install-hputilities
+        - name: mas_app_id
+          value: hputilities
+        - name: mas_app_channel
+          value: "$(params.mas_app_channel_hputilities)"
+        - name: mas_app_catalog_source
+          value: "$(params.mas_app_source_hputilities)"
+      taskRef:
+        name: mas-devops-install-app
+        kind: ClusterTask
+      # Only install HP Utilities if a channel has been chosen
+      when:
+        - input: "$(params.mas_app_channel_hputilities)"
+          operator: notin
+          values: [""]
+      runAfter:
+        - cfg-predict
+      workspaces:
+        - name: settings
+          workspace: shared-settings
+
+    # 20.2 Configure HP Utilities workspace
+    - name: cfg-hputilities
+      params:
+        - name: junit_suite_name
+          value: app-cfg-hputilities
+        - name: mas_app_id
+          value: hputilities
+        - name: mas_workspace_id
+          value: "$(params.mas_workspace_id)"
+      taskRef:
+        name: mas-devops-configure-app
+        kind: ClusterTask
+      # Only install HP Utilities if a channel has been chosen
+      when:
+        - input: "$(params.mas_app_channel_hputilities)"
+          operator: notin
+          values: [""]
+      runAfter:
+        - install-hputilities
+      workspaces:
+        - name: settings
+          workspace: shared-settings
+
+  # 21. Mustgather executed in finally block. Use suite_mustgather_download
   # playbook to retrieve the output on your local machine
   # -------------------------------------------------------------------------
   finally:
