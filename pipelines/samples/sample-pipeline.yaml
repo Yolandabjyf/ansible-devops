@@ -297,7 +297,7 @@ spec:
         name: mas-devops-cp4d-install-services-watsonstudio
         kind: ClusterTask
       runAfter:
-        - cfg-ocp
+        - cp4d-install-db2
       workspaces:
         - name: configs
           workspace: shared-configs
